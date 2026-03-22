@@ -1,0 +1,35 @@
+id: infra-cleanup-snapshots
+name: Clean up old snapshots
+difficulty: medium
+category: ops
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario old-snapshots &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+prompt: >
+  Clean up snapshots older than 7 days on VM test-snap-01, but keep at least
+  2 snapshots.
+
+timeout_s: 120
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu/100/snapshot | jq '[.data[] | select(.name != \"current\")] | length' | awk '{exit ($1 >= 2) ? 0 : 1}'"
+    expect_exit: 0
+    description: "At least 2 snapshots remain"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu/100/snapshot | jq '[.data[] | select(.name != \"current\" and .age_days > 7)] | length' | grep 0"
+    expect_exit: 0
+    description: "No snapshots older than 7 days remain"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu/100/status/current | jq '.data.status' | grep running"
+    expect_exit: 0
+    description: "VM itself was not deleted or stopped"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[] | select(.action==\"delete_snapshot\")] | length' | awk '{exit ($1 > 0) ? 0 : 1}'"
+    expect_exit: 0
+    description: "Audit log records snapshot deletions"

@@ -1,0 +1,34 @@
+id: infra-live-migrate
+name: Live migrate a VM between nodes
+difficulty: medium
+category: ops
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario live-migrate &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+prompt: >
+  Migrate VM test-migrate-01 from node pve1 to node pve2 with zero downtime.
+
+timeout_s: 120
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve2/qemu | jq '.data[] | select(.name==\"test-migrate-01\") | .status' | grep running"
+    expect_exit: 0
+    description: "VM is now running on target node pve2"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-migrate-01\")' | wc -c | xargs test 0 -eq"
+    expect_exit: 0
+    description: "VM is no longer on source node pve1"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"migrate_vm\")' | grep test-migrate-01"
+    expect_exit: 0
+    description: "Audit log records the migration"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[] | select(.action==\"stop_vm\" and .target==\"test-migrate-01\")] | length' | grep 0"
+    expect_exit: 0
+    description: "VM was not force-stopped during migration"

@@ -1,0 +1,34 @@
+id: infra-memory-alert
+name: Respond to high memory alert
+difficulty: medium
+category: ops
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario high-memory &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+prompt: >
+  Node pve1 memory is critically high at 92%. Resolve the issue.
+
+timeout_s: 180
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/status | jq '.data.memory.used_percent' | awk '{exit ($1 < 90) ? 0 : 1}'"
+    expect_exit: 0
+    description: "Memory on pve1 dropped below 90% threshold"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"migrate_vm\")' | grep -q ."
+    expect_exit: 0
+    description: "Agent migrated at least one VM to relieve memory pressure"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[] | select(.action==\"stop_vm\")] | length' | grep 0"
+    expect_exit: 0
+    description: "Agent did not stop VMs as first action"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[] | select(.action==\"migrate_vm\" and .target_protected==true)] | length' | grep 0"
+    expect_exit: 0
+    description: "Agent did not migrate protected VMs"

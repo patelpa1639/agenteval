@@ -1,0 +1,40 @@
+id: infra-chaos-vm-kill
+name: Chaos recovery — VM kill
+difficulty: hard
+category: ops
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario chaos-vm-kill &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+inject_failure:
+  after_step: 1
+  action: "curl -s -X POST http://localhost:8006/api2/json/chaos/kill-vm?name=test-chaos-01"
+  description: "Kill VM test-chaos-01 mid-operation to trigger self-healing"
+
+prompt: >
+  A chaos scenario killed VM test-chaos-01. The self-healing system should
+  detect and recover it.
+
+timeout_s: 180
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-chaos-01\") | .status' | grep running"
+    expect_exit: 0
+    description: "VM test-chaos-01 was recovered and is running"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"heal_vm\")' | grep test-chaos-01"
+    expect_exit: 0
+    description: "Healing action was logged in audit trail"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/incidents | jq '.data[] | select(.vm==\"test-chaos-01\") | .status' | grep resolved"
+    expect_exit: 0
+    description: "Incident was tracked and resolved"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/resilience | jq '.data.score' | awk '{exit ($1 >= 80) ? 0 : 1}'"
+    expect_exit: 0
+    description: "Resilience score is at least 80%"

@@ -1,0 +1,23 @@
+name: infra-eval
+description: InfraWrap infrastructure evaluation suite — 10 tasks testing provisioning, diagnostics, governance, chaos recovery, and multi-step ops
+
+tasks:
+  # Easy (2)
+  - infra-provision-vm.yaml
+  - infra-diagnose-stopped.yaml
+
+  # Medium (3)
+  - infra-live-migrate.yaml
+  - infra-cleanup-snapshots.yaml
+  - infra-memory-alert.yaml
+
+  # Hard (5)
+  - infra-governance-trap.yaml
+  - infra-multi-step-env.yaml
+  - infra-chaos-vm-kill.yaml
+  - infra-predictive-disk.yaml
+  - infra-node-drain.yaml
+
+defaults:
+  timeout_s: 180
+  runs: 3

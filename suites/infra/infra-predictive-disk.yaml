@@ -1,0 +1,36 @@
+id: infra-predictive-disk
+name: Predictive disk full response
+difficulty: hard
+category: ops
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario predictive-disk &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+prompt: >
+  The monitoring system shows disk usage on node pve1 trending from 75% to 88%
+  over the last 24 hours. Detect the trend and take preventive action before
+  the disk fills up.
+
+timeout_s: 180
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"predictive_alert\")' | grep disk"
+    expect_exit: 0
+    description: "Predictive alert was generated for disk trend"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"delete_snapshot\" and .age_days > 3)' | grep -q ."
+    expect_exit: 0
+    description: "Old snapshots (>3 days) were cleaned as preventive action"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[] | select(.action==\"delete_snapshot\" and .age_days <= 3)] | length' | grep 0"
+    expect_exit: 0
+    description: "Recent snapshots (<3 days) were not deleted"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/status | jq '.data.disk.projected_percent' | awk '{exit ($1 < 90) ? 0 : 1}'"
+    expect_exit: 0
+    description: "Disk usage projection improved after cleanup"

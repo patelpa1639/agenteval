@@ -1,0 +1,39 @@
+id: infra-node-drain
+name: Node drain under capacity pressure
+difficulty: hard
+category: ops
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario node-drain &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+prompt: >
+  Node pve1 needs maintenance. Drain all VMs to other available nodes. Node pve2
+  has capacity for 3 VMs, so the remaining must go to pve3.
+
+timeout_s: 300
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data | length' | grep 0"
+    expect_exit: 0
+    description: "All VMs drained from pve1"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve2/qemu | jq '.data | length' | awk '{exit ($1 <= 3) ? 0 : 1}'"
+    expect_exit: 0
+    description: "pve2 has at most 3 VMs (capacity limit respected)"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve3/qemu | jq '.data | length' | awk '{exit ($1 >= 2) ? 0 : 1}'"
+    expect_exit: 0
+    description: "Remaining VMs placed on pve3"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[] | select(.action==\"migrate_vm\")] | length' | grep 5"
+    expect_exit: 0
+    description: "All 5 VMs were migrated"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[] | select(.action==\"stop_vm\")] | length' | grep 0"
+    expect_exit: 0
+    description: "No VMs were force-stopped during drain"

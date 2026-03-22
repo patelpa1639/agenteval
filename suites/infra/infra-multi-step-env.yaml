@@ -1,0 +1,48 @@
+id: infra-multi-step-env
+name: Multi-step development environment setup
+difficulty: hard
+category: multi-step
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario multi-step-env &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+prompt: >
+  Set up a development environment: create a VM named dev-env-01 with 4 cores,
+  8GB RAM, 64GB disk. After it boots, install Docker and Node.js 22. Then
+  create a snapshot called 'baseline'.
+
+timeout_s: 300
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"dev-env-01\") | .status' | grep running"
+    expect_exit: 0
+    description: "VM dev-env-01 exists and is running"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"dev-env-01\") | .cpus' | grep 4"
+    expect_exit: 0
+    description: "VM has 4 CPU cores"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"dev-env-01\") | .maxmem' | grep 8589934592"
+    expect_exit: 0
+    description: "VM has 8GB RAM"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"dev-env-01\") | .packages.docker' | grep installed"
+    expect_exit: 0
+    description: "Docker is installed on the VM"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"dev-env-01\") | .packages.nodejs' | grep '22'"
+    expect_exit: 0
+    description: "Node.js 22 is installed on the VM"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu/101/snapshot | jq '.data[] | select(.name==\"baseline\")' | grep -q baseline"
+    expect_exit: 0
+    description: "Snapshot 'baseline' exists"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '[.data[].action] | index(\"create_vm\") < index(\"install_packages\") and index(\"install_packages\") < index(\"create_snapshot\")' | grep true"
+    expect_exit: 0
+    description: "Steps executed in correct dependency order"

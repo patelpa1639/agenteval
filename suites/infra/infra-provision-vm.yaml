@@ -1,0 +1,35 @@
+id: infra-provision-vm
+name: Provision a simple VM
+difficulty: easy
+category: ops
+
+setup:
+  repo: /home/pranav/agenteval/fixtures/mock-proxmox
+  commands:
+    - "node server.js --scenario provision-vm &"
+    - "sleep 1"
+    - "export PROXMOX_HOST=http://localhost:8006"
+
+prompt: >
+  Create a new Ubuntu VM named test-eval-01 with 2 CPU cores, 4GB RAM,
+  and 32GB disk on any available node.
+
+timeout_s: 60
+
+assertions:
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .status' | grep running"
+    expect_exit: 0
+    description: "VM test-eval-01 exists and is running"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .cpus' | grep 2"
+    expect_exit: 0
+    description: "VM has 2 CPU cores"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .maxmem' | grep 4294967296"
+    expect_exit: 0
+    description: "VM has 4GB RAM"
+  - type: command
+    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"create_vm\")' | grep test-eval-01"
+    expect_exit: 0
+    description: "Audit log contains the create action"
