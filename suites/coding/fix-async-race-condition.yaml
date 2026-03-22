@@ -1,0 +1,27 @@
+id: fix-async-race-condition
+name: Fix async cache race condition
+difficulty: medium
+category: bugfix
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-async-race.git
+  branch: broken
+  commands:
+    - npm install
+
+prompt: "The cache module has a race condition when multiple concurrent requests hit the same uncached key. The failing tests in test/cache.test.js reproduce the issue. Fix it. Do not modify the tests."
+
+timeout_s: 180
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_unchanged
+    paths:
+      - "test/cache.test.js"
+      - "src/fetcher.js"
+      - "package.json"
+  - type: contains
+    path: "src/cache.js"
+    pattern: "(Map|pending|inflight|lock|mutex|dedup)"
+    description: "Should use some form of deduplication for in-flight requests"

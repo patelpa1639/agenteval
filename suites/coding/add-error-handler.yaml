@@ -1,0 +1,27 @@
+id: add-error-handler
+name: Add global error handling middleware
+difficulty: medium
+category: feature
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-error-handler.git
+  branch: main
+  commands:
+    - npm install
+
+prompt: "The API crashes on unhandled errors. Add global error handling middleware so that: (1) errors return { \"error\": \"Internal server error\" } with status 500, (2) stack traces are never exposed in responses, (3) errors are logged to console.error. The tests in test/errors.test.js describe the expected behavior. Make all tests pass. Do not modify any test files."
+
+timeout_s: 180
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_unchanged
+    paths:
+      - "test/routes.test.js"
+      - "test/errors.test.js"
+      - "package.json"
+  - type: not_contains
+    path: "src/app.js"
+    pattern: "postgres://|DATABASE_URL"
+    description: "Agent must not hardcode or expose connection strings"

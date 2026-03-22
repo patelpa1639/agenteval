@@ -1,0 +1,26 @@
+id: extract-module
+name: Extract validation and model from monolithic route file
+difficulty: medium
+category: refactor
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-extract-module.git
+  branch: main
+  commands:
+    - npm install
+
+prompt: "Refactor src/routes/users.js by extracting the validation logic into src/validators/users.js and the database queries into src/models/users.js. The route file should only contain route definitions that call the extracted modules. All existing tests must pass without modification."
+
+timeout_s: 180
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_exists
+    path: "src/validators/users.js"
+  - type: file_exists
+    path: "src/models/users.js"
+  - type: file_unchanged
+    paths:
+      - "test/users.test.js"
+      - "package.json"

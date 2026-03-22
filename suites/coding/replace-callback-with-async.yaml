@@ -1,0 +1,29 @@
+id: replace-callback-with-async
+name: Convert callback-based modules to async/await
+difficulty: hard
+category: refactor
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-callback-async.git
+  branch: main
+  commands:
+    - npm install
+
+prompt: "The source modules use nested callbacks but the tests expect a Promise-based async/await API. Refactor all source files in src/ to use async/await instead of callbacks so that all tests pass. Do not modify the tests."
+
+timeout_s: 240
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: not_contains
+    path: "src/pipeline.js"
+    pattern: "callback\\("
+    description: "Pipeline should no longer use callbacks"
+  - type: contains
+    path: "src/pipeline.js"
+    pattern: "async "
+  - type: file_unchanged
+    paths:
+      - "test/pipeline.test.js"
+      - "package.json"

@@ -1,0 +1,22 @@
+id: fix-string-escape
+name: Fix HTML string escaping bug
+difficulty: easy
+category: bugfix
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-string-escape.git
+  branch: broken
+  commands:
+    - npm install
+
+prompt: "The test suite has a failing test. Fix the bug. Do not modify the tests."
+
+timeout_s: 120
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_unchanged
+    paths:
+      - "test/sanitize.test.js"
+      - "package.json"

@@ -1,0 +1,22 @@
+id: fix-array-filter
+name: Fix inverted array filter predicate
+difficulty: easy
+category: bugfix
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-array-filter.git
+  branch: broken
+  commands:
+    - npm install
+
+prompt: "Two tests are failing in the users module. Fix the bug. Do not modify the tests."
+
+timeout_s: 120
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_unchanged
+    paths:
+      - "test/users.test.js"
+      - "package.json"

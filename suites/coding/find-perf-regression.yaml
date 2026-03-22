@@ -1,0 +1,32 @@
+id: find-perf-regression
+name: Find and fix search performance regression
+difficulty: hard
+category: debug
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-perf-regression.git
+  branch: broken
+  commands:
+    - npm install
+
+prompt: "The search endpoint performance has regressed. test/search.perf.js is failing -- it expects cached responses under 50ms but they're taking much longer. Investigate the cause and fix it. Do not modify any test files."
+
+timeout_s: 240
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_unchanged
+    paths:
+      - "test/search.test.js"
+      - "test/search.perf.js"
+      - "package.json"
+  - type: contains
+    path: "src/db/queries.js"
+    pattern: "cache"
+    description: "Fix should restore caching"
+
+inject_failure:
+  after_step: 2
+  action: "echo '{}' > src/db/cache.js"
+  description: "Corrupt the cache module after agent starts investigating"

@@ -1,0 +1,45 @@
+id: add-project-archival
+name: Add project archival support across model and API
+difficulty: hard
+category: multi-step
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-project-archival.git
+  branch: main
+  commands:
+    - npm install
+
+prompt: |
+  Add project archival support. Specifically:
+  1. Add an `archived` field to the Project model (default: false)
+  2. Add PATCH /api/projects/:id/archive (sets archived to true)
+  3. Add PATCH /api/projects/:id/unarchive (sets archived to false)
+  4. Modify GET /api/projects to exclude archived projects by default
+  5. Add ?include_archived=true query param to include them
+
+  The tests in test/archive.test.js describe all expected behavior. Make all tests pass.
+
+timeout_s: 300
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_unchanged
+    paths:
+      - "test/projects.test.js"
+      - "test/archive.test.js"
+      - "package.json"
+  - type: contains
+    path: "src/models/project.js"
+    pattern: "archived"
+  - type: contains
+    path: "src/routes/projects.js"
+    pattern: "archive"
+  - type: contains
+    path: "src/routes/projects.js"
+    pattern: "include_archived"
+
+inject_failure:
+  after_step: 5
+  action: "rm src/routes/projects.js"
+  description: "Delete the routes file after agent has started editing it"

@@ -1,0 +1,45 @@
+{
+  "name": "agenteval",
+  "version": "0.1.0",
+  "description": "AI agent evaluation framework — benchmark coding agents with reproducible tasks and multi-dimensional scoring",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "agenteval": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "evaluation",
+    "benchmark",
+    "llm",
+    "claude",
+    "codex"
+  ],
+  "author": "Pranav Patel",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "commander": "^14.0.3",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

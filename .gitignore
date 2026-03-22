@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.env
+*.db
+data/
+*.tsbuildinfo
+.DS_Store
+fixtures/
+node_modules/
+.agenteval/

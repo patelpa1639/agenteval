@@ -1,0 +1,19 @@
+name: coding-mvp
+description: MVP coding evaluation suite — 10 tasks across bugfix, feature, refactor, debug, and multi-step categories
+
+tasks:
+  # Easy (3)
+  - fix-string-escape.yaml
+  - fix-array-filter.yaml
+  - add-input-validation.yaml
+
+  # Medium (4)
+  - fix-async-race-condition.yaml
+  - add-middleware.yaml
+  - add-error-handler.yaml
+  - extract-module.yaml
+
+  # Hard (3)
+  - replace-callback-with-async.yaml
+  - find-perf-regression.yaml
+  - add-project-archival.yaml

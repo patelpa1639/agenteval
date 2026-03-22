@@ -1,0 +1,23 @@
+id: add-input-validation
+name: Add input validation to POST /api/users
+difficulty: easy
+category: feature
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-input-validation.git
+  branch: main
+  commands:
+    - npm install
+
+prompt: "Add input validation to the POST /api/users endpoint. The tests in test/validation.test.js describe the expected behavior. Make all tests pass. Do not modify any test files."
+
+timeout_s: 120
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_unchanged
+    paths:
+      - "test/users.test.js"
+      - "test/validation.test.js"
+      - "package.json"

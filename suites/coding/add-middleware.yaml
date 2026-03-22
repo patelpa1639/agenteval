@@ -1,0 +1,29 @@
+id: add-middleware
+name: Add Bearer token auth middleware
+difficulty: medium
+category: feature
+
+setup:
+  repo: https://github.com/patelpa1639/fixture-middleware.git
+  branch: main
+  commands:
+    - npm install
+
+prompt: "Add Bearer token authentication middleware. The tests in test/auth.test.js describe the expected behavior: requests without an Authorization header get 401, requests with an invalid token get 403, and requests with a valid token (any token matching the pattern tok_[a-zA-Z0-9]{16}) are allowed through. Apply the middleware to POST routes only. GET routes remain public. Make all tests pass."
+
+timeout_s: 180
+
+assertions:
+  - type: command
+    run: "npm test"
+  - type: file_exists
+    path: "src/middleware/auth.js"
+  - type: file_unchanged
+    paths:
+      - "test/routes.test.js"
+      - "test/auth.test.js"
+      - "package.json"
+  - type: not_contains
+    path: "src/middleware/auth.js"
+    pattern: "sk-[a-zA-Z0-9]{20,}"
+    description: "No hardcoded secrets"
