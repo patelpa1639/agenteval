@@ -123,45 +123,43 @@ Claude Code was faster on 9 of 10 tasks. The gap got bigger as tasks got harder:
 | fix-async-race-condition | 23s | 49s | **2.1x** |
 | replace-callback-with-async | 38s | 62s | **1.6x** |
 
-The one exception: `add-project-archival`, where Codex edged ahead by 6 seconds (40s vs 46s).
+The one exception was `add-project-archival`, where Codex was slightly faster (40s vs 46s).
 
-Total: 17.3 minutes vs 23.8 minutes. A 27% speed advantage.
+Total: 17.3 minutes vs 23.8 minutes, so 27% faster overall.
 
 ### Safety: Perfect Scores, But the Tests Were Easy
 
 Both agents scored 100% on safety. Zero credential access, zero destructive commands, zero scope escape, zero unauthorized dependencies across 60 runs.
 
-I'm not celebrating yet. The task suite had one deliberate safety trap — a `.env` file with database credentials in the error-handler fixture — and neither agent touched it. That's good. But the tasks never created a situation where the "easy" solution required unsafe behavior. Until adversarial safety tests exist in the suite, perfect safety scores are a ceiling, not a signal.
+I'm not celebrating yet. The task suite had one deliberate safety trap (a `.env` file with database credentials in the error-handler fixture) and neither agent touched it. That's good. But the tasks never created a situation where the easy solution required unsafe behavior. Until I add adversarial safety tests, perfect scores here don't tell us much.
 
 ### Codex CLI Reports Zero Cost Data
 
-Every cost metric for Codex shows $0.00. Not because it's free — because its CLI exposes no token counts, model usage, or cost data.
+Every cost metric for Codex shows $0.00. Not because it's free, but because the CLI doesn't expose token counts, model usage, or cost data at all.
 
-Claude Code's JSON output includes full token and cost breakdowns. If you're an engineering team trying to forecast agent spend, one of these tools gives you data and the other gives you nothing.
+Claude Code's JSON output includes full token and cost breakdowns. If you're trying to forecast what agents will cost you, one tool gives you numbers and the other doesn't.
 
-### Difficulty Doesn't Predict Cost — Code Volume Does
+### Difficulty Doesn't Predict Cost
 
-The most expensive Claude Code task was `extract-module` ($0.048) — rated medium. The cheapest hard task was `find-perf-regression` ($0.016). Cost tracks with how much the agent reads and writes, not how conceptually hard the problem is.
+The most expensive Claude Code task was `extract-module` ($0.048), rated medium. The cheapest hard task was `find-perf-regression` ($0.016). Cost tracks with how much the agent reads and writes, not how hard the problem is conceptually.
 
 ---
 
 ## Limitations
 
-These results have clear holes:
-
-1. **10 tasks is not enough.** It demonstrates the methodology but can't claim statistical significance across categories.
-2. **No recovery testing.** The framework supports failure injection (deleting files mid-run, corrupting configs). I didn't configure it for this run. It's the most novel dimension and the most missing.
-3. **Asymmetric cost comparison.** Claude Code's efficiency is measured precisely. Codex CLI's is unmeasurable.
-4. **One model per agent.** Claude Code ran Opus 4.6; Codex CLI ran its default. Neither was tested across model variants.
-5. **Node.js only.** All fixtures are JavaScript. Agent performance may diverge significantly on Python, Go, or Rust.
+1. **10 tasks is not enough.** Good enough to show the methodology works, not enough for real statistical claims across categories.
+2. **No recovery testing.** The framework supports failure injection (deleting files mid-run, corrupting configs) but I didn't configure it for this run. It's the most interesting dimension and the most missing.
+3. **Asymmetric cost comparison.** I can measure Claude Code's efficiency precisely. Codex CLI's is a black box.
+4. **One model per agent.** Claude Code ran Opus 4.6, Codex CLI ran its default. No model variant testing.
+5. **Node.js only.** All fixtures are JavaScript. Results could look very different on Python, Go, or Rust.
 
 ---
 
 ## What's Next
 
-**Next week:** Recovery testing on 3+ tasks with failure injection. Adversarial safety tasks where the easy solution is the unsafe one. 5 runs per task for tighter variance data.
+**Next week:** Recovery testing on 3+ tasks with failure injection. Adversarial safety tasks where the easy solution is the unsafe one. Bump to 5 runs per task for tighter variance data.
 
-**Next month:** Python and Go fixtures. Model variant comparison (Sonnet vs Opus, GPT-4o vs o3). A third agent — likely Aider or Cursor Agent.
+**Next month:** Python and Go fixtures. Model variant comparison (Sonnet vs Opus, GPT-4o vs o3). A third agent, probably Aider or Cursor Agent.
 
 **Later:** Open-source with contribution guidelines. Infrastructure-specific task suites. Non-coding agent evaluation.
 
@@ -196,4 +194,4 @@ All 10 fixture repos are public at [github.com/patelpa1639](https://github.com/p
 
 ---
 
-*Built with [AgentEval](https://github.com/patelpa1639/agenteval) — open-source multi-dimensional AI agent evaluation.*
+*Built with [AgentEval](https://github.com/patelpa1639/agenteval), an open-source framework for multi-dimensional AI agent evaluation.*
