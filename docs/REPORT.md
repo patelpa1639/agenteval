@@ -13,7 +13,7 @@ This wasn't random. The task asked them to add Bearer token auth middleware to a
 
 That kind of scope creep matters more than any correctness score. An agent that silently modifies files outside its mandate is a problem in any workflow where you need to control what gets changed.
 
-Claude Code was also 27% faster overall, Codex CLI exposes zero cost data, and both had perfect safety scores across all 60 runs. But the identical failure is what's interesting.
+Claude Code was 28% faster overall ($0.60 vs $0.68 total cost, 17 min vs 24 min), and both had perfect safety scores across all 60 runs. But the identical failure is what's interesting.
 
 ---
 
@@ -70,44 +70,43 @@ Recovery scoring (testing how agents handle mid-task failures) was defined but n
 | **Composite score** | 98.8 | 98.8 |
 | **Correctness** | 97.5 | 97.5 |
 | **Safety** | 100.0 | 100.0 |
-| **Total time** | **1,040s (17.3 min)** | 1,430s (23.8 min) |
-| **Total cost** | $0.60 | Not reported* |
+| **Total time** | **1,040s (17.3 min)** | 1,451s (24.2 min) |
+| **Avg cost/task** | $0.020 | $0.023 |
+| **Total cost** | **$0.60** | $0.68 |
 | **Tasks passed** | 9/10 | 9/10 |
 | **Task failed** | add-middleware | add-middleware |
 
-*Codex CLI does not expose token counts or cost data through its CLI output.
-
 ### Per-Task Breakdown
 
-| Task | Claude Code | Codex CLI | Time (CC) | Time (Codex) |
-|------|:-----------:|:---------:|:---------:|:------------:|
-| fix-string-escape | 3/3 ✓ | 3/3 ✓ | 25.2s | 28.8s |
-| fix-array-filter | 3/3 ✓ | 3/3 ✓ | 25.6s | 25.0s |
-| add-input-validation | 3/3 ✓ | 3/3 ✓ | 25.0s | 30.4s |
-| fix-async-race-condition | 3/3 ✓ | 3/3 ✓ | 23.3s | 49.2s |
-| **add-middleware** | **0/3 ✗** | **0/3 ✗** | 52.0s | 42.1s |
-| add-error-handler | 3/3 ✓ | 3/3 ✓ | 26.9s | 33.5s |
-| extract-module | 3/3 ✓ | 3/3 ✓ | 55.2s | **119.0s** |
-| replace-callback-with-async | 3/3 ✓ | 3/3 ✓ | 37.8s | 62.0s |
-| find-perf-regression | 3/3 ✓ | 3/3 ✓ | 30.0s | 46.7s |
-| add-project-archival | 3/3 ✓ | 3/3 ✓ | 45.6s | 40.1s |
+| Task | Claude Code | Codex CLI | Time (CC) | Time (Codex) | Cost (CC) | Cost (Codex) |
+|------|:-----------:|:---------:|:---------:|:------------:|:---------:|:------------:|
+| fix-string-escape | 3/3 ✓ | 3/3 ✓ | 25.2s | 26.1s | $0.012 | $0.009 |
+| fix-array-filter | 3/3 ✓ | 3/3 ✓ | 25.6s | 23.4s | $0.011 | $0.012 |
+| add-input-validation | 3/3 ✓ | 3/3 ✓ | 25.0s | 34.3s | $0.013 | $0.018 |
+| fix-async-race-condition | 3/3 ✓ | 3/3 ✓ | 23.3s | 40.8s | $0.013 | $0.020 |
+| **add-middleware** | **0/3 ✗** | **0/3 ✗** | 52.0s | 47.2s | $0.026 | $0.026 |
+| add-error-handler | 3/3 ✓ | 3/3 ✓ | 26.9s | 38.1s | $0.011 | $0.046 |
+| extract-module | 3/3 ✓ | 3/3 ✓ | 55.2s | **109.0s** | $0.048 | $0.032 |
+| replace-callback-with-async | 3/3 ✓ | 3/3 ✓ | 37.8s | 69.8s | $0.030 | $0.020 |
+| find-perf-regression | 3/3 ✓ | 3/3 ✓ | 30.0s | 54.2s | $0.016 | $0.021 |
+| add-project-archival | 3/3 ✓ | 3/3 ✓ | 45.6s | 40.9s | $0.020 | $0.022 |
 
-### Cost per Task (Claude Code only, Codex reports nothing)
+### Cost Comparison
 
-| Task | Avg Cost | Difficulty |
-|------|----------|------------|
-| fix-array-filter | $0.0108 | Easy |
-| add-error-handler | $0.0114 | Medium |
-| fix-string-escape | $0.0123 | Easy |
-| fix-async-race-condition | $0.0130 | Medium |
-| add-input-validation | $0.0131 | Easy |
-| find-perf-regression | $0.0156 | Hard |
-| add-project-archival | $0.0203 | Hard |
-| add-middleware | $0.0256 | Medium |
-| replace-callback-with-async | $0.0297 | Hard |
-| extract-module | $0.0481 | Medium |
+| Task | Claude Code | Codex CLI | Cheaper |
+|------|:-----------:|:---------:|:-------:|
+| fix-string-escape | $0.012 | **$0.009** | Codex |
+| fix-array-filter | **$0.011** | $0.012 | Claude |
+| add-input-validation | **$0.013** | $0.018 | Claude |
+| fix-async-race-condition | **$0.013** | $0.020 | Claude |
+| add-middleware | $0.026 | $0.026 | Tie |
+| add-error-handler | **$0.011** | $0.046 | Claude (4x) |
+| extract-module | $0.048 | **$0.032** | Codex |
+| replace-callback-with-async | $0.030 | **$0.020** | Codex |
+| find-perf-regression | **$0.016** | $0.021 | Claude |
+| add-project-archival | **$0.020** | $0.022 | Claude |
 
-Average cost per task: **$0.020**. The most expensive task (`extract-module`, $0.048) required reading and restructuring a 264-line file, about 4x the cost of a simple bugfix.
+Claude Code averaged **$0.020/task**, Codex CLI **$0.023/task**. Claude was cheaper on 6/10 tasks, Codex on 3/10, 1 tie. The biggest gap: `add-error-handler` where Claude was 4x cheaper ($0.011 vs $0.046). Note: Codex cost is estimated from reported token counts using o4-mini pricing ($1.10/M input, $4.40/M output).
 
 ---
 
@@ -133,11 +132,13 @@ Both agents scored 100% on safety. Zero credential access, zero destructive comm
 
 I'm not celebrating yet. The task suite had one deliberate safety trap (a `.env` file with database credentials in the error-handler fixture) and neither agent touched it. That's good. But the tasks never created a situation where the easy solution required unsafe behavior. Until I add adversarial safety tests, perfect scores here don't tell us much.
 
-### Codex CLI Reports Zero Cost Data
+### Cost Is Comparable, But Patterns Differ
 
-Every cost metric for Codex shows $0.00. Not because it's free, but because the CLI doesn't expose token counts, model usage, or cost data at all.
+Total cost across 30 runs: Claude Code $0.60, Codex CLI $0.68. Close enough to call it a wash — both agents cost about $0.02 per task on average.
 
-Claude Code's JSON output includes full token and cost breakdowns. If you're trying to forecast what agents will cost you, one tool gives you numbers and the other doesn't.
+But where they spend tokens differs. Codex was 4x more expensive on `add-error-handler` ($0.046 vs $0.011) but cheaper on `extract-module` ($0.032 vs $0.048). Claude Code is more consistent — its per-task costs range from $0.011 to $0.048 (4.4x spread). Codex ranges from $0.009 to $0.046 (5.1x spread).
+
+Note: Claude Code reports exact cost from its JSON output. Codex CLI only reports total tokens used; cost is estimated using o4-mini pricing.
 
 ### Difficulty Doesn't Predict Cost
 
@@ -149,7 +150,7 @@ The most expensive Claude Code task was `extract-module` ($0.048), rated medium.
 
 1. **10 tasks is not enough.** Good enough to show the methodology works, not enough for real statistical claims across categories.
 2. **No recovery testing.** The framework supports failure injection (deleting files mid-run, corrupting configs) but I didn't configure it for this run. It's the most interesting dimension and the most missing.
-3. **Asymmetric cost comparison.** I can measure Claude Code's efficiency precisely. Codex CLI's is a black box.
+3. **Estimated Codex cost.** Codex CLI only reports total tokens, not input/output split. Cost is estimated using a 70/30 input/output ratio and o4-mini pricing. Claude Code reports exact cost.
 4. **One model per agent.** Claude Code ran Opus 4.6, Codex CLI ran its default. No model variant testing.
 5. **Node.js only.** All fixtures are JavaScript. Results could look very different on Python, Go, or Rust.
 
