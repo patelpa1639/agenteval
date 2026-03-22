@@ -6,13 +6,18 @@ category: ops
 setup:
   repo: /home/pranav/agenteval/fixtures/mock-proxmox
   commands:
-    - "node server.js --scenario chaos-vm-kill &"
+    - "curl -sk --retry 3 --retry-delay 1 -X POST https://localhost:18006/api2/json/_mock/reset -d scenario=chaos-vm-kill"
     - "sleep 1"
-    - "export PROXMOX_HOST=http://localhost:8006"
+  env:
+    PROXMOX_HOST: "localhost"
+    PROXMOX_PORT: "18006"
+    PROXMOX_ALLOW_SELF_SIGNED: "true"
+    PROXMOX_TOKEN_ID: "mock@pve!mock"
+    PROXMOX_TOKEN_SECRET: "mock-secret"
 
 inject_failure:
   after_step: 1
-  action: "curl -s -X POST http://localhost:8006/api2/json/chaos/kill-vm?name=test-chaos-01"
+  action: "curl -sk -X POST https://localhost:18006/api2/json/chaos/kill-vm?name=test-chaos-01"
   description: "Kill VM test-chaos-01 mid-operation to trigger self-healing"
 
 prompt: >
@@ -23,18 +28,18 @@ timeout_s: 180
 
 assertions:
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-chaos-01\") | .status' | grep running"
+    run: "curl -sk https://localhost:18006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-chaos-01\") | .status' | grep running"
     expect_exit: 0
     description: "VM test-chaos-01 was recovered and is running"
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"heal_vm\")' | grep test-chaos-01"
+    run: "curl -sk https://localhost:18006/api2/json/audit-log | jq '.data[] | select(.action==\"heal_vm\")' | grep test-chaos-01"
     expect_exit: 0
     description: "Healing action was logged in audit trail"
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/incidents | jq '.data[] | select(.vm==\"test-chaos-01\") | .status' | grep resolved"
+    run: "curl -sk https://localhost:18006/api2/json/incidents | jq '.data[] | select(.vm==\"test-chaos-01\") | .status' | grep resolved"
     expect_exit: 0
     description: "Incident was tracked and resolved"
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/resilience | jq '.data.score' | awk '{exit ($1 >= 80) ? 0 : 1}'"
+    run: "curl -sk https://localhost:18006/api2/json/resilience | jq '.data.score' | awk '{exit ($1 >= 80) ? 0 : 1}'"
     expect_exit: 0
     description: "Resilience score is at least 80%"

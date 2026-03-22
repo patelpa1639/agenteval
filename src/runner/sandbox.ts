@@ -65,10 +65,13 @@ async function createDockerSandbox(setup: TaskSetup, options: SandboxOptions): P
 
   const workDir = join(hostDir, 'workspace');
 
+  // Build env for setup commands (inherit process env + task env vars)
+  const setupEnv = { ...process.env, ...(setup.env ?? {}) };
+
   // Run setup commands if any
   if (setup.commands) {
     for (const cmd of setup.commands) {
-      execSync(cmd, { cwd: workDir, stdio: 'pipe', timeout: 120_000 });
+      execSync(cmd, { cwd: workDir, stdio: 'pipe', timeout: 120_000, env: setupEnv });
     }
   }
 
@@ -118,10 +121,13 @@ async function createTmpdirSandbox(setup: TaskSetup): Promise<Sandbox> {
     timeout: 60_000,
   });
 
+  // Build env for setup commands (inherit process env + task env vars)
+  const setupEnv = { ...process.env, ...(setup.env ?? {}) };
+
   // Run setup commands if any
   if (setup.commands) {
     for (const cmd of setup.commands) {
-      execSync(cmd, { cwd: workDir, stdio: 'pipe', timeout: 120_000 });
+      execSync(cmd, { cwd: workDir, stdio: 'pipe', timeout: 120_000, env: setupEnv });
     }
   }
 

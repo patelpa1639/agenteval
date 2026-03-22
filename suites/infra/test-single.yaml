@@ -1,0 +1,4 @@
+name: infra-test-single
+description: Single task for testing infra eval integration
+tasks:
+  - infra-provision-vm.yaml

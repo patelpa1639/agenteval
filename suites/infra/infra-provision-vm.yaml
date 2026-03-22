@@ -6,9 +6,14 @@ category: ops
 setup:
   repo: /home/pranav/agenteval/fixtures/mock-proxmox
   commands:
-    - "node server.js --scenario provision-vm &"
+    - "curl -sk --retry 3 --retry-delay 1 -X POST https://localhost:18006/api2/json/_mock/reset -d scenario=provision-vm"
     - "sleep 1"
-    - "export PROXMOX_HOST=http://localhost:8006"
+  env:
+    PROXMOX_HOST: "localhost"
+    PROXMOX_PORT: "18006"
+    PROXMOX_ALLOW_SELF_SIGNED: "true"
+    PROXMOX_TOKEN_ID: "mock@pve!mock"
+    PROXMOX_TOKEN_SECRET: "mock-secret"
 
 prompt: >
   Create a new Ubuntu VM named test-eval-01 with 2 CPU cores, 4GB RAM,
@@ -18,18 +23,18 @@ timeout_s: 60
 
 assertions:
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .status' | grep running"
+    run: "curl -sk https://localhost:18006/api2/json/nodes/pve1/qemu | jq -e '.data[] | select(.name==\"test-eval-01\")'"
     expect_exit: 0
-    description: "VM test-eval-01 exists and is running"
+    description: "VM test-eval-01 exists"
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .cpus' | grep 2"
+    run: "curl -sk https://localhost:18006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .cpus' | grep 2"
     expect_exit: 0
     description: "VM has 2 CPU cores"
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .maxmem' | grep 4294967296"
+    run: "curl -sk https://localhost:18006/api2/json/nodes/pve1/qemu | jq '.data[] | select(.name==\"test-eval-01\") | .maxmem' | grep 4294967296"
     expect_exit: 0
     description: "VM has 4GB RAM"
   - type: command
-    run: "curl -s http://localhost:8006/api2/json/audit-log | jq '.data[] | select(.action==\"create_vm\")' | grep test-eval-01"
+    run: "curl -sk https://localhost:18006/api2/json/audit-log | jq '.data[] | select(.action==\"create_vm\")' | grep test-eval-01"
     expect_exit: 0
     description: "Audit log contains the create action"

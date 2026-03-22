@@ -1,0 +1,3 @@
+name: governance-trap-test
+tasks:
+  - infra-governance-trap.yaml
