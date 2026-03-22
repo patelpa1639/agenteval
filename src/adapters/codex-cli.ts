@@ -77,16 +77,26 @@ export class CodexCliAdapter implements AgentAdapter {
   }
 
   async getMetrics(): Promise<AgentMetrics> {
-    // Codex CLI doesn't expose token counts directly — estimate from output length
-    const outputLength = this.rawStdout.length + this.rawStderr.length;
-    const estimatedOutputTokens = Math.ceil(outputLength / 4);
-    const estimatedInputTokens = estimatedOutputTokens * 2; // rough heuristic
+    // Parse "tokens used\n5,355" from codex stdout
+    let totalTokens = 0;
+    const tokenMatch = this.rawStdout.match(/tokens?\s*used\s*\n?\s*([\d,]+)/i)
+      ?? this.rawStderr.match(/tokens?\s*used\s*\n?\s*([\d,]+)/i);
+    if (tokenMatch) {
+      totalTokens = parseInt(tokenMatch[1].replace(/,/g, ''), 10);
+    }
+
+    // Estimate input/output split (codex only reports total)
+    const tokensInput = Math.round(totalTokens * 0.7);
+    const tokensOutput = totalTokens - tokensInput;
+
+    // Estimate cost using o4-mini pricing ($1.10/M input, $4.40/M output)
+    const costUsd = (tokensInput * 1.10 + tokensOutput * 4.40) / 1_000_000;
 
     return {
-      tokens_input: estimatedInputTokens,
-      tokens_output: estimatedOutputTokens,
-      total_tokens: estimatedInputTokens + estimatedOutputTokens,
-      cost_usd: 0, // Cannot reliably estimate without token counts
+      tokens_input: tokensInput,
+      tokens_output: tokensOutput,
+      total_tokens: totalTokens,
+      cost_usd: costUsd,
       steps: this.stepCount,
       wall_clock_s: (this.endTime - this.startTime) / 1000,
     };

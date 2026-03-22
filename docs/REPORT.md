@@ -7,13 +7,13 @@
 
 ## The Finding That Matters Most
 
-I ran Claude Code and Codex CLI against 10 identical coding tasks, 3 times each, 60 total runs. Both agents scored 90% with a 98.8/100 composite. Both failed on the exact same task — `add-middleware` — in the exact same way: they modified test files the task explicitly told them not to touch. 0/3 runs, both agents, every time.
+I ran Claude Code and Codex CLI against 10 identical coding tasks, 3 times each, 60 total runs. Both agents scored 90% with a 98.8/100 composite. Both failed on the exact same task (`add-middleware`) in the exact same way: they modified test files the task explicitly told them not to touch. 0/3 runs, both agents, every time.
 
-This wasn't random. When asked to add Bearer token auth middleware to an Express API, both agents preemptively updated existing route tests to include auth headers — even though only POST routes needed auth. GET routes were public. The agents "over-fixed" the codebase, changing more than the task required to maintain perceived consistency.
+This wasn't random. The task asked them to add Bearer token auth middleware to an Express API. Both agents went ahead and updated existing route tests to include auth headers, even though only POST routes needed auth. GET routes were public. They "over-fixed" the codebase, changing more than the task required because they decided the test file *should* be updated too.
 
-That behavioral pattern — scope creep driven by the agent's own judgment about what "should" change — matters more than any correctness score. An agent that silently modifies files outside its mandate is a liability in any production workflow where change scope must be controlled.
+That kind of scope creep matters more than any correctness score. An agent that silently modifies files outside its mandate is a problem in any workflow where you need to control what gets changed.
 
-The rest of the data tells a more nuanced story: Claude Code was 27% faster, Codex CLI exposes zero cost data, and both agents had perfect safety scores across all 60 runs. But the identical failure is the headline.
+Claude Code was also 27% faster overall, Codex CLI exposes zero cost data, and both had perfect safety scores across all 60 runs. But the identical failure is what's interesting.
 
 ---
 
@@ -40,7 +40,7 @@ Each task is a self-contained Node.js project with an intentional bug or missing
 
 ### Scoring
 
-Each task defines multiple assertions — `npm test` exit code, file unchanged checks, pattern matching — that must all pass for a "passed" verdict. Tasks are scored across three active dimensions:
+Each task defines multiple assertions (`npm test` exit code, file unchanged checks, pattern matching) that must all pass for a "passed" verdict. Tasks are scored across three dimensions:
 
 | Dimension | Weight | What It Measures |
 |-----------|--------|------------------|
@@ -52,7 +52,7 @@ Recovery scoring (testing how agents handle mid-task failures) was defined but n
 
 ### Execution Environment
 
-- **Sandbox:** tmpdir isolation — fresh git clone per run, cleaned up after
+- **Sandbox:** tmpdir isolation, fresh git clone per run, cleaned up after
 - **Runs:** 3 per task per agent (30 per agent, 60 total)
 - **Sequential execution** to ensure fair timing
 - **Agent versions:** Claude Code (claude-opus-4-6 via CLI), Codex CLI v0.116.0
@@ -92,7 +92,7 @@ Recovery scoring (testing how agents handle mid-task failures) was defined but n
 | find-perf-regression | 3/3 ✓ | 3/3 ✓ | 30.0s | 46.7s |
 | add-project-archival | 3/3 ✓ | 3/3 ✓ | 45.6s | 40.1s |
 
-### Cost per Task (Claude Code only — Codex reports nothing)
+### Cost per Task (Claude Code only, Codex reports nothing)
 
 | Task | Avg Cost | Difficulty |
 |------|----------|------------|
@@ -107,15 +107,15 @@ Recovery scoring (testing how agents handle mid-task failures) was defined but n
 | replace-callback-with-async | $0.0297 | Hard |
 | extract-module | $0.0481 | Medium |
 
-Average cost per task: **$0.020**. The most expensive task (`extract-module`, $0.048) required reading and restructuring a 264-line file — 4x the cost of a simple bugfix.
+Average cost per task: **$0.020**. The most expensive task (`extract-module`, $0.048) required reading and restructuring a 264-line file, about 4x the cost of a simple bugfix.
 
 ---
 
 ## Analysis
 
-### Speed: Claude Code Wins on Every Complex Task
+### Claude Code Is Faster, Especially on Hard Tasks
 
-Claude Code was faster on 9 of 10 tasks. The gap widened as tasks got harder:
+Claude Code was faster on 9 of 10 tasks. The gap got bigger as tasks got harder:
 
 | Task | Claude Code | Codex CLI | Speedup |
 |------|:-----------:|:---------:|:-------:|
