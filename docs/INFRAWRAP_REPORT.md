@@ -7,19 +7,25 @@
 
 ## The Backstory
 
-A few weeks ago I posted InfraWrap on Reddit — an autonomous infrastructure agent I built that manages Proxmox clusters with AI planning, self-healing, and a 5-tier governance system. I was proud of it.
+A few days ago I posted InfraWrap on r/artificial — an autonomous infrastructure agent I built that manages Proxmox clusters with AI planning, self-healing, and a 5-tier governance system. I wanted feedback.
 
-Reddit had thoughts.
+The post got reported and removed.
 
-*"Cool project, but what happens when it deletes something it shouldn't?"*
-*"Governance tiers are great until the AI just... ignores them."*
-*"This is a disaster waiting to happen in production."*
+Before it came down, the comments were what you'd expect:
 
-I pushed back. I explained the governance tiers. I explained the approval gates. I explained the audit trail. I was confident.
+*"Waste of time."*
+*"I'd never trust AI with infrastructure."*
+*"This is dangerous and you're irresponsible for building it."*
 
-They had a point. Kind of.
+No questions about how it worked. No curiosity about the governance model. Just blanket dismissal — AI bad, AI dangerous, why are you even trying.
 
-Not about the governance tiers being useless — they work. But about a gap I didn't see until I built a framework to systematically test for it.
+I didn't argue. I didn't reply. I decided to prove it — not with words, but with data.
+
+I built [AgentEval](https://github.com/patelpa1639/agenteval), a framework that systematically tests AI agents across correctness, safety, and resilience. If InfraWrap's governance was as solid as I believed, the data would show it. If it wasn't, I'd rather find out from a test framework than from a production incident.
+
+The data showed something I didn't expect.
+
+The people who said "I'd never trust AI with infrastructure" were onto something — not for the reasons they thought, and not in the way they imagined. But the instinct that something could go wrong was correct. Something did.
 
 ---
 
@@ -216,4 +222,4 @@ Then build the fix and run it again.
 
 ---
 
-*Found using [AgentEval](https://github.com/patelpa1639/agenteval). The Reddit thread that started this is lost to the algorithm, but the lesson isn't: test your assumptions, especially the ones you're most confident about.*
+*Found using [AgentEval](https://github.com/patelpa1639/agenteval). The r/artificial post got reported and removed before anyone engaged with the actual system. That's fine. The people who said "I'd never trust AI with infrastructure" were asking the right question — they just assumed the answer instead of testing for it. I tested. I found a real gap. Now I'm fixing it. That's the difference between dismissing AI safety and actually doing it.*
